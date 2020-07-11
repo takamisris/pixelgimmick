@@ -20,12 +20,12 @@
         headerItems: [
           {
             text: '技術系ブログ',
-            image: '',
+            image: '_nuxt/assets/images/test.png',
             link: '',
           },
           {
             text: '技術系ブログ2',
-            image: '',
+            image: '_nuxt/assets/images/test.png',
             link: '',
           },
         ],

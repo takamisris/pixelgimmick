@@ -1,10 +1,10 @@
 <template>
   <div class="header-item">
     <div class="header-item-icon-wrapper">
-      <Icon />
+      <IconCenter :image="headerItemInfo.image" />
     </div>
-    <div class="header-item-text">
-      {{ headerItemInfo.text }}
+    <div class="header-item-text-wrapper">
+      <TextCenter :text="headerItemInfo.text" />
     </div>
   </div>
 </template>
@@ -35,12 +35,13 @@
       border: 1px solid blue;
       position: relative;
     }
-    .header-item-text {
+    .header-item-text-wrapper{
       display: inline-block;
       width: 50%;
       height: 100%;
-      font-size: 1rem;
       border: 1px solid green;
+      position: relative;
+      font-size: 1rem;
     }
 
     .header-item-img {

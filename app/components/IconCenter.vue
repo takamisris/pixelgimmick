@@ -1,6 +1,7 @@
 <template>
   <div ref="icon" class="icon">
-    <img src="@/assets/images/test.png"/>
+    <img :src="image" />
+<!--    <img src="@/assets/images/test.png"/>-->
   </div>
 </template>
 
@@ -8,9 +9,9 @@
   import Vue from 'vue'
 
   export default Vue.extend({
-    name: 'Icon',
+    name: 'IconCenter',
     props: [
-      'headerItemInfo',
+      'image',
     ],
     mounted() {
       this.adjustIconSize();
