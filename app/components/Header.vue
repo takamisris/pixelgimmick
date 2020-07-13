@@ -2,6 +2,9 @@
   <header>
     <div class="menu">
       <div class="menu-content">
+        <div class="logo-wrap">
+          <Logo />
+        </div>
         <div class="header-item-wrap" :style="headerItemWrapStyle" v-for="headerItemInfo in headerItems">
           <HeaderItem :headerItemInfo=headerItemInfo />
         </div>
@@ -20,17 +23,17 @@
         headerItems: [
           {
             text: '技術系ブログ',
-            image: '_nuxt/assets/images/test.png',
+            image: 'test.png',
             link: '',
           },
           {
             text: '技術系ブログ2',
-            image: '_nuxt/assets/images/test.png',
+            image: 'test.png',
             link: '',
           },
         ],
         headerItemWrapStyle: {
-          width: '50%',
+          width: '40%',
           height: '100%',
           display: 'inline-block',
         },
@@ -57,6 +60,15 @@
       height: 100%;
       width: 90%;
       font-size: 0;
+      .logo-wrap {
+        vertical-align: top;
+        display: inline-block;
+        width: 20%;
+        height: 100%;
+      }
+      .header-item-wrap {
+        display: inline-block;
+      }
     }
   }
 </style>

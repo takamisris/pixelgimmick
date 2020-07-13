@@ -26,7 +26,6 @@
     height: 100%;
     border: 1px solid red;
     font-size: 0;
-    word-spacing: 0;
     .header-item-icon-wrapper {
       vertical-align: top;
       display: inline-block;
