@@ -32,18 +32,21 @@ const engine = Engine.create(/*container, */{
   }
 });
 
-// Girl
+// circle for girl
 const girlRectangleX = 180;
 const girlRectangleY = 380;
 const girlRectangleW = 220;
-const girlTop = Bodies.rectangle(girlRectangleX, girlRectangleY, girlRectangleW, girlRectangleW, {
-  isStatic: true,
-  chamfer: { radius: girlRectangleW / 2 }
-});
+const girlTop = getSpecificCircle(girlRectangleX, girlRectangleY, girlRectangleW);
+
+// circle for hedgehog
+let hhRectangleX = 500;
+let hhRectangleY = 400;
+let hhRectangleW = 80;
+const hhTop = getSpecificCircle(hhRectangleX, hhRectangleY, hhRectangleW);
 
 // Circle
 let boxes = [];
-const circleNum = 80;  // the number of circles
+const circleNum = 100;  // the number of circles
 const boundaryLeft = 50;
 const boundaryRight = canvasWidth - 50;
 const boundaryTop = 20;
@@ -59,11 +62,18 @@ for (let i=0; i<circleNum; i++) {
 }
 
 // Add to world
-World.add(engine.world, [girlTop]);
+World.add(engine.world, [girlTop, hhTop]);
 World.add(engine.world, boxes);
 
 // run the engine
 Engine.run(engine);
+
+function getSpecificCircle(x, y, w) {
+  return Bodies.rectangle(x, y, w, w, {
+    isStatic: true,
+    chamfer: { radius: w / 2 }
+  });
+}
 
 /* ------▲ matter.js------ */
 
@@ -75,8 +85,8 @@ let Application = PIXI.Application,
   loader = PIXI.loader,
   resources = PIXI.loader.resources,
   Sprite = PIXI.Sprite,
-  Text = PIXI.Text,
-  TextStyle = PIXI.TextStyle;
+  TextStyle = PIXI.TextStyle,
+  AnimatedSprite = PIXI.AnimatedSprite;
 
 //Area
 const areaX = canvasWidth / 3;
@@ -88,20 +98,34 @@ const areaHeight =  canvasHeight / 2;
 let app = new PIXI.Application({width: canvasWidth, height: canvasHeight, transparent: true});
 document.querySelector(".container").appendChild(app.view);
 
-let girl, rectangles = [];
+let girl, rectangles = [], hedgehogAnim, hhMoving = false, hhDirection = {}, hhDestination = {};
+const moveBoundary = {x: 100, y: 100, w: canvasWidth - 100, h: canvasHeight - 100};
 
 loader
-  .add("images/girl.json")
+  .add("images/pic.json")
   .load(setup);
 
 function setup() {
   //Create girl sprite
-  let id = resources["images/girl.json"].textures;
-  girl = new Sprite(id["girl01.png"]);
+  let id = resources["images/pic.json"].textures;
+  girl = new Sprite(id["girl.png"]);
   app.stage.addChild(girl);
   girl.anchor.set(0.5, 0.5);
   girl.x = 200;
   girl.y = 400;
+
+  //Create hedgehog sprite
+  let hedgehogFrames = [];
+  for (let i=0; i<8; i++) {
+    hedgehogFrames.push(PIXI.Texture.from(`hedgehog-${i}.png`));
+  }
+  hedgehogAnim = new AnimatedSprite(hedgehogFrames);
+  app.stage.addChild(hedgehogAnim);
+  hedgehogAnim.anchor.set(0.5, 0.5);
+  hedgehogAnim.x = hhRectangleX;
+  hedgehogAnim.y = hhRectangleY + 10;
+  hedgehogAnim.animationSpeed = 0.1;
+  hedgehogAnim.play();
 
   //Create circles
   const area = areaPosition();
@@ -131,7 +155,7 @@ function setup() {
     dropShadowAngle: Math.PI / 6,
     dropShadowDistance: 6,
   });
-  let title = new Text("Pixel Gimmick", titleStyle);
+  let title = new PIXI.Text("Pixel Gimmick", titleStyle);
   title.anchor.set(0.5, 0.5);
   title.position.set(titlePosX, titlePosY);
   app.stage.addChild(title);
@@ -168,7 +192,7 @@ function gameLoop(delta) {
       Body.setVelocity(boxes[index], {x: 0, y: 0});
     })
   } else {
-    // Update circle
+    // Update falling circles
     boxes.forEach((box, index) => {
       rectangles[index].x = box.position.x;
       rectangles[index].y = box.position.y;
@@ -178,11 +202,61 @@ function gameLoop(delta) {
       }
     })
   }
+
+  // hedgehog moving
+  if (!hhMoving) {
+    // will move or not?
+    hhMoving = randomValue(0, 100) === 1;
+    if (!hhMoving) return;
+
+    // which direction?
+    hhDirection.x = randomValue(-1, 2);
+    hhDirection.y = randomValue(-1, 2);
+
+    // how far?
+    const dist = randomValue(100, 300);
+    hhDestination.x = hhRectangleX + dist * hhDirection.x;
+    hhDestination.y = hhRectangleY + dist * hhDirection.y;
+
+    // if over boundary, not move
+    if (isOverBoundary(hhDestination)) {
+      // can't move...
+      hhMoving = false;
+    } else {
+      // can move!
+      // flip according to the direction
+      if (hhDirection.x > 0) {
+        hedgehogAnim.scale.x = -1;
+      } else {
+        hedgehogAnim.scale.x = 1;
+      }
+    }
+
+  } else {
+    // still move?
+    if (hhDestination.x === hhRectangleX && hhDestination.y === hhRectangleY) {
+      // arrived, stop!
+      hhMoving = false;
+
+    } else {
+      // not arrived yet, still move!
+      // update hedgehog circle
+      hhRectangleX += hhDirection.x;
+      hhRectangleY += hhDirection.y;
+      Body.setPosition(hhTop, {x: hhRectangleX, y: hhRectangleY});
+
+      // update hedgehog position
+      hedgehogAnim.x = hhRectangleX;
+      hedgehogAnim.y = hhRectangleY + 10;
+    }
+
+  }
+
 }
 
 /* ------▲ pixi.js------ */
 
-// ger random value
+// get random value
 function randomValue(min, max) {
   return Math.floor( Math.random() * (max - min) ) + min;
 }
@@ -194,6 +268,13 @@ function randomColor() {
     color += "0123456789ABCDEF"[16 * Math.random() | 0];
   }
   return color;
+}
+
+function isOverBoundary(destination) {
+  return destination.x < moveBoundary.x ||
+    destination.x > moveBoundary.x + moveBoundary.w ||
+    destination.y < moveBoundary.y ||
+    destination.y > moveBoundary.y + moveBoundary.h;
 }
 
 // get area position
